@@ -4,32 +4,11 @@
         <v-container grid-list-md text-xs-center>
             <v-layout>
                 <v-flex>
-                    <v-toolbar flat color="white">
-                        <v-toolbar-title>Schemes</v-toolbar-title>
-                     </v-toolbar>
-                        <v-data-table
-                            :headers="headers"
-                            :items="objects"
-                            class="elevation-1"
-                        >
-                            <template v-slot:items="props">  
-                                <td>
-                                    <br>
-                                    <v-radio-group v-model="selectedScheme">
-                                    <v-radio
-                                    :value="props.item.id"
-                                    ></v-radio>
-                                    </v-radio-group>
-                                </td>     
-                                <td> {{ props.item.name }} </td>
-                                <td> {{ props.item.title }} </td>                        
-                            </template>
-                        </v-data-table>
-                    
+                    <table-schemes :objects="objects" @sayParent="selectItemScheme"></table-schemes>             
                 </v-flex>
                 <v-flex>
                     <div v-if="selectedScheme != -1">
-                    <table-all-schemes :allSchemes="objects[selectedScheme].fields"></table-all-schemes>
+                        <table-all-schemes :allSchemes="objects[selectedScheme].fields"></table-all-schemes>
                     </div>
                     <div v-else>
                         <table-all-schemes :allSchemes="[]"></table-all-schemes>
@@ -39,54 +18,45 @@
         </v-container>
         
         <v-container grid-list-md text-xs-center>
-            <dialog-add-schemes :addScheme="addScheme"></dialog-add-schemes>                       
+            <div v-if="selectedScheme!=-1">
+                <dialog-add-schemes @sayParent="update" :idSelectedScheme="objects[selectedScheme]._id" ></dialog-add-schemes> 
+            </div>
+            <div v-else>
+                <dialog-add-schemes @sayParent="update" :idSelectedScheme="selectedScheme" ></dialog-add-schemes>
+            </div>                      
         </v-container>
     </div>
 </template>
 
 <script>
-//import axios from 'axios';
-import TableAllSchemes from '@/components/constructor/TableAllSchemes.vue'
-import DialogAddSchemes from '@/components/constructor/DialogAddSchemes.vue'
+import axios from 'axios'
+import TableAllSchemes from '@/components/constructor/item/TableAllSchemes.vue'
+import DialogAddSchemes from '@/components/constructor/item/DialogAddSchemes.vue'
 import MenuConstructor from '@/components/constructor/MenuConstructor'
+import TableSchemes from '@/components/constructor/item/TableSchemes.vue'
 
 export default {
 
     components: {
         TableAllSchemes,
         DialogAddSchemes,
-        MenuConstructor
+        MenuConstructor,
+        TableSchemes
     },
 
     data: () => ({       
-        objects: [ ],
+        objects: [],
         selectedScheme: -1,
-        headers: [
-            {
-                sortable: false,
-            },
-            {
-                text: 'Name Scheme',
-                align: 'center',
-                sortable: false,
-                value: 'name'
-            },
-            {
-                text: 'Title Scheme',
-                align: 'center',
-                sortable: false,
-                value: 'title'
-            },
-        ]
     }),
 
     mounted() {
-        /*axios
+        axios
             .get('http://localhost:8080/api/v1/scheme/item')
-            .then(function (response) {
-                // handle success
-                global.console.log(response);
-            })*/
+            .then(response => (
+                this.objects = response.data 
+                //global.console.log(response.data)
+            ))
+            .catch(error => global.console.log(error))
     },
 
     methods: {
@@ -97,6 +67,23 @@ export default {
                 title: data.newScheme.title,
                 id: data.newScheme.id                
             });
+        },
+        selectItemScheme (data) {
+            global.console.log('sitem')
+            this.selectedScheme = Number(data.selectedScheme)
+        },
+        update(data) {
+            if(data.update === 1) {
+                global.console.log('update')
+                axios
+                    .get('http://localhost:8080/api/v1/scheme/item')
+                    .then(response => (
+                        this.objects = response.data 
+                        //global.console.log(response.data)
+                    ))
+                    .catch(error => global.console.log(error))
+            }
+            
         }        
     }    
 }
