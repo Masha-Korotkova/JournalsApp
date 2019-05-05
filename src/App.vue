@@ -1,5 +1,6 @@
 <template>
   <v-app>
+	
     <v-content>
       <v-container fluid>
         <router-view></router-view>
@@ -9,7 +10,11 @@
 </template>
 
 <script>
+
 export default {
+	components:{
+	
+  }
 }
 </script>
 
